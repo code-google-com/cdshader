@@ -79,8 +79,8 @@ GLfloat WallVertices[][3] = {
 };
 
 GLfloat FloorColors[][3] = {
-    { 1.0, 1.0, 0.5 }, { 1.0, 1.0, 0.5 }, { 1.0, 1.0, 0.5 }, 
-    { 1.0, 1.0, 0.5 }
+    { 0.5, 0.5, 0.5 }, { 0.5, 0.5, 0.5 }, { 0.5, 0.5, 0.5 }, 
+    { 0.5, 0.5, 0.5 }
 };
 
 GLfloat FloorVertices[][3] = {
@@ -186,7 +186,7 @@ void setupShaders() {
 #if 0
    GLfloat position[]       = { 0.0, 10.0, -6.0, 0.0 };
 #else
-   GLfloat position[]       = { 0.0, 2.0, -6.0, 0.0 };
+   GLfloat position[]       = { 0.0, 10.0, -40.0, 0.0 };
 #endif
 
 
@@ -239,6 +239,19 @@ void drawscene( void ) {
 	GLint HoleR = glGetUniformLocation(cd, "HoleR");
 	glUniform1f(HoleR, 1.0);	// radius of hole in the middle
 
+	GLint Llength = glGetUniformLocation(cd, "Llength");
+	glUniform1f(Llength, 1.0);	// length of line source
+	GLint a = glGetUniformLocation(cd, "a");
+	glUniform1f(a, 300);		// track separation distance
+	GLint b = glGetUniformLocation(cd, "b");
+	glUniform1f(b, 1200.0);		// pit sequence length
+	GLint LambdaI = glGetUniformLocation(cd, "LambdaI");
+	glUniform1f(LambdaI, 400);	// Starting wavelength
+	GLint LambdaStep = glGetUniformLocation(cd, "LambdaStep");
+	glUniform1f(LambdaStep, 50);	// step value for wavelength
+	GLint LambdaF = glGetUniformLocation(cd, "LambdaF");
+	glUniform1f(LambdaF, 700);	// Ending value for wavelength
+
 	glMaterialfv( GL_FRONT, GL_AMBIENT,   mat_ambient_color );
 	glMaterialfv( GL_FRONT, GL_DIFFUSE,   mat_diffuse );
 	glMaterialfv( GL_FRONT, GL_SPECULAR,  mat_specular );
@@ -263,9 +276,10 @@ void drawscene( void ) {
       glVertex3fv( WallVertices[3] );
 	glEnd( );
 
+	// Draw point at light source
 	glPushMatrix();
 	glLoadIdentity();
-	glUseProgram(0); // disable programmable shaders
+	glUseProgram(NULL); // disable programmable shaders
 	glPointSize(3.0);
 	glBegin(GL_POINTS);
 		glColor4f(1.0, 0.0, 0.0, 1.0);
@@ -360,7 +374,7 @@ int main( int argc, char **argv ) {
 	// enable depth testing
 	glEnable( GL_DEPTH_TEST ); 
 	glEnable (GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Camera stuff - matrix initialization
 	glMatrixMode( GL_PROJECTION );
