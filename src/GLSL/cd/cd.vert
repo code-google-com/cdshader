@@ -8,19 +8,20 @@
 
 //attribute vec3 Tangent;     // parallel to grating lines at each vertex
 varying vec3 normal, lightDir, eyeVec, P;
+varying vec2 P_tex;
 
 
 // Main function
 void main() {
      // from plastic shader in lab1
-     vec3 LightPos = vec3 (0.0, 5.0, -15.0);
+     vec3 LightPos = gl_LightSource[0].position.xyz;
      normal = gl_NormalMatrix * gl_Normal;
-     vec3 vVertex = vec3(gl_ModelViewMatrix * gl_Vertex);
-     lightDir = LightPos - vVertex;
-     eyeVec = -vVertex;
+     P = vec3(gl_ModelViewMatrix * gl_Vertex);
+     lightDir = LightPos - P;
+     eyeVec = -P;
 	
-	// Point shading in texture space
-	P = vec3(gl_TextureMatrix[2] * gl_Vertex);
+	// Point we're shading in texture space
+	P_tex = vec2(gl_TextureMatrix[3] * gl_Vertex);
 	
 	gl_Position = ftransform();
 }
