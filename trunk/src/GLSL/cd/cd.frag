@@ -25,6 +25,8 @@ uniform float LambdaI;		// Starting wavelength (400 nm)
 uniform float LambdaStep;	// Step value (50nm)
 uniform float LambdaF;		// Final wavelength value, do not exceed (700nm)
 
+float PI = 3.14159;	// constant PI value
+
 
 // map a visible wavelength [nm] to OpenGL's RGB representation
 // Took from example in the book
@@ -50,14 +52,59 @@ vec3 S(float t)
 	return L + (t_vec * t);
 }
 
-float spd_track(vec3 q)
+float gauss(float x)
 {
-	return 1.0;
+	float sqrt_variance = 1.0;
+	float expected_val = 1.0;
+	float a = 1.0 / (sqrt_variance * sqrt(2.0 * PI));
+	float b = expected_val;
+	float c = sqrt_variance;
+	
+	return a * exp(-pow(x - b, 2.0) / (2.0 * pow(c, 2.0)));
 }
 
-float spd_pit(vec3 q)
+float spd_track(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float lambda)
 {
-	return 1.0;
+	float spd = 0.0;
+	// loop through some values
+	for (float n = -2.0; n <= 2.0; n += 1.0)
+	{
+		// condition:
+		//   a * ((2 * PI) / lambda) * (Ax + Bx * t) - 2 * PI * n == 0      AND
+		//   b * ((2 * PI) / lambda) * (Ay + By * t) - 2 * PI * m == 0
+		vec3 A = (P - L) / Llength - k2_uv;
+		vec3 B = t_uv / Llength;
+		float equation_14 = a * ((2 * PI) / lambda) * (A.x + B.x * t) - 2 * PI * n;
+		
+		if (equation_14 == 0)	// must be true for there to be a contribution by this.
+		{
+			spd += 2.0 * gauss(a * q.x - 2.0 * PI * n);
+		}
+	}
+	
+	return spd;
+}
+
+float spd_pit(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float lambda)
+{
+	float spd = 0.0;
+	// loop through some values
+	for (float m = -2.0; m <= 2.0; m += 1.0)
+	{
+		// condition:
+		//   a * ((2 * PI) / lambda) * (Ax + Bx * t) - 2 * PI * n == 0      AND
+		//   b * ((2 * PI) / lambda) * (Ay + By * t) - 2 * PI * m == 0
+		vec3 A = (P - L) / Llength - k2_uv;
+		vec3 B = t_uv / Llength;
+		float equation_15 = b * ((2 * PI) / lambda) * (A.y + B.y * t) - 2 * PI * m;
+		
+		if (equation_15 == 0.0)	// must be true for there to be a contribution by this.
+		{
+			spd += 2.0 * gauss(b * q.y - 2.0 * PI * m);
+		}
+	}
+	
+	return spd;
 }
 
 vec3 spd_mirror()
@@ -68,8 +115,6 @@ vec3 spd_mirror()
 vec3 spd_diffraction()
 {
 	vec3 finalcolor = vec3(0.0);
-	
-	float PI = 3.14159;
 	
 	//loop through all wavelengths and add up final color based on spd_pit*spd_track*rgb, return
 	for (float lambda = LambdaI; lambda <= LambdaF; lambda += LambdaStep)
@@ -87,17 +132,7 @@ vec3 spd_diffraction()
 			vec3 k2 = (2 * PI) / lambda * k2_uv;
 			
 			vec3 q = k1 - k2;
-			// condition:
-			//   a * ((2 * PI) / lambda) * (Ax + Bx * t) - 2 * PI * n == 0      AND
-			//   b * ((2 * PI) / lambda) * (Ay + By * t) - 2 * PI * m == 0
-			vec3 A = (P - L) / Llength - k2_uv;
-			vec3 B = t_uv / Llength;
-			float equation_14 = a * ((2 * PI) / lambda) * (A.x + B.x * t) - 2 * PI * 1.0;
-			float equation_15 = b * ((2 * PI) / lambda) * (A.y + B.y * t) - 2 * PI * 1.0;
-			if (equation_14 == 0 && equation_15 == 0)	// must be true for there to be a contribution by this.
-			{
-				finalcolor += spd_pit(q) * spd_track(q) * lambda2rgb(lambda);
-			}
+			finalcolor += spd_pit(q, L, k2_uv, t, t_uv, lambda) * spd_track(q, L, k2_uv, t, t_uv, lambda) * lambda2rgb(lambda);
 		}
 	}
 	
