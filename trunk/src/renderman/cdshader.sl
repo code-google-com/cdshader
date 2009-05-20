@@ -106,10 +106,32 @@ SPDtrack
     
     // The current spike intensity iteration value
     float n;
+    
+    // Track separation distance
+    float a;
+    
+    // cn
+    float cn;
+    
+    // t
+    float t;
+    
+    // A vector
+    point A;
+    
+    // B vector
+    point B;
+    
+    // x vector
+    point x;
 )
 {
-    // TODO: Compute the SPD value for the track contribution
-    return 0.0;
+    float 2pl = (2 * PI) / lambda;
+    float f = (A * x) + (B * x * t);
+    float z = (a * 2pl * f) - (2 * PI * n);
+    float SPDtrack = cn * gaussianDelta( z );
+    
+    return SPDtrack;
 }
 
 /**
@@ -126,10 +148,32 @@ SPDpit
     
     // The current spike intensity iteration value
     float m;
+    
+    // Pit sequence length
+    float b;
+    
+    // cm
+    float cm;
+    
+    // t
+    float t;
+    
+    // A vector
+    point A;
+    
+    // B vector
+    point B;
+    
+    // x vector
+    point x;
 )
 {
-    // TODO: Compute the SPD value for the pit contribution
-    return 0.0;
+    float 2pl = (2 * PI) / lambda;
+    float f = (A * y) + (B * y * t);
+    float z = (b * 2pl * f) - (2 * PI * m);
+    float SPDpit = cm * gaussianDelta( z );
+    
+    return SPDpit;
 }
 
 /**
@@ -156,7 +200,7 @@ SPDdiffraction
     // The track SPD
     float trackSPD = 0;
     
-    // The pit SPD color
+    // The pit SPD
     float pitSPD = 0;
     
     // The normal
@@ -178,6 +222,12 @@ SPDdiffraction
     // TODO: Decide if track separation should be a passed in parameter or generated value
     // The pit separation
     float pitSeparation = 900;
+    
+    point x_uv;
+    point y_uv;
+    
+    point k2_uv = E - P / distance(E - P);
+	
 
     // Illuminate
     illuminance( P, Nn, PI/2 )
