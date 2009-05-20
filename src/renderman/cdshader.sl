@@ -53,15 +53,20 @@ float gaussianDelta ( float x; float deviation; float mean; ) {
 /**
 * SPDmirror - Represents the mirror contribution to the specular
 * power distribution of the surface.
+*
+* This is currently just the Ks value from Phong shading, but 
+* we may want to change it in the future, so this function may not
+* be useless.
 **/
 float
 SPDmirror
 (
-    // TODO: Define arguments for the function
+	// Specular component
+    float m;
 )
 {
     // TODO: Compute the mirrored surface color for the cd
-    return 0.0;
+    return m;
 }
 
 // SPD Diffuse >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -69,16 +74,20 @@ SPDmirror
 /**
 * SPDdiffuse - Represents the diffuse contribution to the specular
 * power distribution for the surface.
+*
+* This is currently just the Kd value from Phong shading, but 
+* we may want to change it in the future, so this function may not
+* be useless.
 **/
 float
 SPDdiffuse
 (
-    // The normal point to use
-    normal N;
+	// Diffuse component
+    float d;
 )
 {
     // Return the diffuse contribution
-    return 0.0; //float diffuse( normalize(N) );
+    return d;
 }
 
 // SPD Diffraction >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -249,6 +258,13 @@ cdshader
     
     // The number of iterations for the diffraction (should be even)
     float iterations = 6;
+    
+    // Phong variables
+    float Ka = 0.5;
+    float Kd = 0.5;
+    float Ks = 1;
+    float roughness = 0.1;
+	color specularcolor = 1;
 )
 {
     // Get the distance from the current point to the cd center
@@ -268,13 +284,11 @@ cdshader
           wavelength += wavelengthDelta ) {
             // Get the total SPD value for the cd shader
             float SPD =
-                SPDmirror() +
-                SPDdiffuse( N ) +
+                SPDmirror(Ks) +
+                SPDdiffuse(Kd) +
                 SPDdiffraction( P, N, wavelength, iterations );
         
         	// Use the total SPD to get the color contribution
-        	// temporarily set SPD to a constant so something shows up
-        	SPD = 0.5;
         	Cdisc += convertColor(SPD, wavelength);
         }
     }
@@ -285,5 +299,8 @@ cdshader
     }
 
     // Set the color and the opacity
-    Ci = Cdisc * Oi;
+    normal Nf = faceforward (normalize(N),I);
+    color phongcontrib = (Ka*ambient() + Kd*diffuse(Nf)) +
+	 	specularcolor * Ks*specular(Nf,-normalize(I),roughness);
+    Ci = Cdisc * phongcontrib * Oi;
 }
