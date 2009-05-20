@@ -47,7 +47,7 @@ void printProgramInfoLog(GLuint obj);
 #define true 1
 
 
-#define CDenabled 1
+#define CDENABLED 1
 
 
 int currentX;		// Current location of X
@@ -202,7 +202,7 @@ void init( void ) {
    GLfloat lmodel_ambient[] = { 0.4, 0.4, 0.4, 1.0 };
    GLfloat local_view[]     = { 0.0 };
 
-   glClearColor( 0.0, 0.1, 0.1, 0.0 );
+   glClearColor( 0.1, 0.1, 0.1, 0.0 );
    glEnable( GL_DEPTH_TEST );
    glShadeModel( GL_SMOOTH );
 
@@ -231,6 +231,7 @@ void drawscene( void ) {
 	glRotatef( angle, axis[0], axis[1], axis[2] );
 
 	// draw the wall -- don't forget to assign your texture coords
+#if CDENABLED
 	glUseProgram(cd);  // Use cd shader
 	GLint Center = glGetUniformLocation(cd, "Center");
 	glUniform3f(Center, 0.0, 0.0, 0.0);
@@ -240,18 +241,18 @@ void drawscene( void ) {
 	glUniform1f(HoleR, 1.0);	// radius of hole in the middle
 
 	GLint Llength = glGetUniformLocation(cd, "Llength");
-	glUniform1f(Llength, 1.0);	// length of line source
-	GLint a = glGetUniformLocation(cd, "a");
+	glUniform1f(Llength, 10.0);	// length of line source
+	GLint a = glGetUniformLocation(cd, "Aa");
 	glUniform1f(a, 300);		// track separation distance
-	GLint b = glGetUniformLocation(cd, "b");
+	GLint b = glGetUniformLocation(cd, "Bb");
 	glUniform1f(b, 1200.0);		// pit sequence length
 	GLint LambdaI = glGetUniformLocation(cd, "LambdaI");
 	glUniform1f(LambdaI, 400);	// Starting wavelength
 	GLint LambdaStep = glGetUniformLocation(cd, "LambdaStep");
-	glUniform1f(LambdaStep, 50);	// step value for wavelength
+	glUniform1f(LambdaStep, 20);	// step value for wavelength
 	GLint LambdaF = glGetUniformLocation(cd, "LambdaF");
 	glUniform1f(LambdaF, 700);	// Ending value for wavelength
-
+#endif
 	glMaterialfv( GL_FRONT, GL_AMBIENT,   mat_ambient_color );
 	glMaterialfv( GL_FRONT, GL_DIFFUSE,   mat_diffuse );
 	glMaterialfv( GL_FRONT, GL_SPECULAR,  mat_specular );
@@ -282,7 +283,6 @@ void drawscene( void ) {
 	glUseProgram(NULL); // disable programmable shaders
 	glPointSize(3.0);
 	glBegin(GL_POINTS);
-		glColor4f(1.0, 0.0, 0.0, 1.0);
 		glVertex3fv(position);
 	glEnd();
 	glPopMatrix();
@@ -324,22 +324,22 @@ void keyboard(unsigned char c, int x, int y) {
 		exit(0);
 	}
 	else if (c == 'a') {
-		angle = 1.0;
+		angle = 15.0;
 		axis[1] = 1.0;
 		axis[2] = axis[0] = 0.0;
 	}
 	else if (c == 'd') {
-		angle = -1.0;
+		angle = -5.0;
 		axis[1] = 1.0;
 		axis[2] = axis[0] = 0.0;
 	}
 	else if (c == 'w') {
-		angle = -1.0;
+		angle = -5.0;
 		axis[0] = 1.0;
 		axis[1] = axis[2] = 0.0;
 	}
 	else if (c == 's') {
-		angle = 1.0;
+		angle = 5.0;
 		axis[0] = 1.0;
 		axis[1] = axis[2] = 0.0;
 	}
