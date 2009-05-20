@@ -1,5 +1,7 @@
 // Helper Functions >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+#define	s2pi sqrt(2 * PI)
+
 /**
 * wavelengthToRGB - Converts a given wavelength value into an RGB
 * value.
@@ -18,15 +20,18 @@ wavelengthToRGB
 /**
 * gaussianDelta - Defines the delta function for the Gaussian
 * distribution.
+* 
+* G(x) = (1 / d*sqrt(2*PI)) * e^( -((x-m)^2)/(2d^2) )
+* Defaults to standard normal distribution at 1
+*
 **/
 float
 gaussianDelta
-(
-    // TODO: Define arguments for the function
-)
+( float x = 1, float deviation = 1, float mean = 0 )
 {
-    // TODO: Compute the gaussian value
-    return 0.0;
+	double a = 1 / (deviation * s2pi);
+	double g = (x-mean)*(x-mean) / (2 * deviation * deviation);
+	return a * exp(-g);
 }
 
 // SPD Mirror >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
