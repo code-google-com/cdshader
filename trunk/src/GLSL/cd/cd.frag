@@ -18,15 +18,14 @@ uniform float HoleR;	// radius of hole in disc
 uniform float Llength;		// Length of line light source
 //uniform L;					// Orientation is determined by taking lightDir x eyeVec so that it is fixed as a line source
 
-uniform float a;		// track separation distance
-uniform float b;		// pit sequence length (varies between 900nm and 3300nm in steps of 300nm)
+uniform float Aa;		// track separation distance
+uniform float Bb;		// pit sequence length (varies between 900nm and 3300nm in steps of 300nm)
 
 uniform float LambdaI;		// Starting wavelength (400 nm)
 uniform float LambdaStep;	// Step value (50nm)
 uniform float LambdaF;		// Final wavelength value, do not exceed (700nm)
 
-float PI = 3.14159;	// constant PI value
-
+const float PI = 3.14159;	// constant PI value
 
 // map a visible wavelength [nm] to OpenGL's RGB representation
 // Took from example in the book
@@ -54,32 +53,44 @@ vec3 S(float t)
 
 float gauss(float x)
 {
-	float sqrt_variance = 1.0;
+	float sqrt_variance = 0.4;
 	float expected_val = 1.0;
-	float a = 1.0 / (sqrt_variance * sqrt(2.0 * PI));
-	float b = expected_val;
-	float c = sqrt_variance;
+	float Ca = 1.0 / (sqrt_variance * sqrt(2.0 * PI));
+	float Cb = expected_val;
+	float Cc = sqrt_variance;
 	
-	return a * exp(-pow(x - b, 2.0) / (2.0 * pow(c, 2.0)));
+	return Ca * exp(-((x - Cb) * (x - Cb)) / (2.0 * Cc * Cc));
 }
 
 float spd_track(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float lambda)
 {
 	float spd = 0.0;
 	// loop through some values
-	for (float n = -2.0; n <= 2.0; n += 1.0)
+	//float n = 1.0;
+	for (int n = 1; n <= 5; n += 1)
 	{
 		// condition:
 		//   a * ((2 * PI) / lambda) * (Ax + Bx * t) - 2 * PI * n == 0      AND
 		//   b * ((2 * PI) / lambda) * (Ay + By * t) - 2 * PI * m == 0
 		vec3 A = (P - L) / Llength - k2_uv;
 		vec3 B = t_uv / Llength;
-		float equation_14 = a * ((2 * PI) / lambda) * (A.x + B.x * t) - 2 * PI * n;
 		
-		if (equation_14 == 0)	// must be true for there to be a contribution by this.
-		{
-			spd += 2.0 * gauss(a * q.x - 2.0 * PI * n);
-		}
+		vec3 Ax = cross(A, vec3(0.0, 0.0, P.z));
+		vec3 Bx = cross(B, vec3(0.0, 0.0, P.z));
+		
+		vec3 qx = cross(q, vec3(0.0, 0.0, P.z));
+		
+		//float equation_14_1 = Aa * ((2.0 * PI) / (lambda / 1000.0)) * (Ax.x + Bx.x * t) - 2.0 * PI * n;
+		//if (equation_14_1 == 0)	// must be true for there to be a contribution by this.
+		//{
+			spd += 2.0 * gauss(Aa * qx.x - 2.0 * PI * n);
+		//}
+		
+		//float equation_14_2 = Aa * ((2.0 * PI) / (lambda / 1000.0)) * (Ax.x + Bx.x * t) - 2.0 * PI * -n;
+		//if (equation_14_2 == 0)	// must be true for there to be a contribution by this.
+		//{
+			spd += 2.0 * gauss(Aa * qx.x - 2.0 * PI * -n);
+		//}
 	}
 	
 	return spd;
@@ -89,19 +100,31 @@ float spd_pit(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float lambda)
 {
 	float spd = 0.0;
 	// loop through some values
-	for (float m = -2.0; m <= 2.0; m += 1.0)
+	//float m = 1.0;
+	for (int m = 1; m <= 5; m += 1)
 	{
 		// condition:
 		//   a * ((2 * PI) / lambda) * (Ax + Bx * t) - 2 * PI * n == 0      AND
 		//   b * ((2 * PI) / lambda) * (Ay + By * t) - 2 * PI * m == 0
 		vec3 A = (P - L) / Llength - k2_uv;
 		vec3 B = t_uv / Llength;
-		float equation_15 = b * ((2 * PI) / lambda) * (A.y + B.y * t) - 2 * PI * m;
 		
-		if (equation_15 == 0.0)	// must be true for there to be a contribution by this.
-		{
-			spd += 2.0 * gauss(b * q.y - 2.0 * PI * m);
-		}
+		float Ay = dot(A, P - Center);
+		float By = dot(B, P - Center);
+		
+		float qy = dot(q, P - Center);
+		
+		//float equation_15_1 = Bb * ((2.0 * PI) / (lambda / 1000.0)) * (Ay + By * t) - 2.0 * PI * m;
+		//if (equation_15_1 == 0.0)	// must be true for there to be a contribution by this.
+		//{
+			spd += 2.0 * gauss(Bb * qy - 2.0 * PI * m);
+		//}
+		
+		//float equation_15_2 = Bb * ((2.0 * PI) / (lambda / 1000.0)) * (Ay + By * t) - 2.0 * PI * -m;
+		//if (equation_15_2 == 0.0)	// must be true for there to be a contribution by this.
+		//{
+			spd += 2.0 * gauss(Bb * qy - 2.0 * PI * -m);
+		//}
 	}
 	
 	return spd;
@@ -116,20 +139,20 @@ vec3 spd_diffraction()
 {
 	vec3 finalcolor = vec3(0.0);
 	
+	// unit vectors
+	vec3 t_uv = cross(normalize(lightDir), normalize(eyeVec));	// Direction (orientation) of line light
+	vec3 L = gl_LightSource[0].position.xyz;	// Light position	
+	
 	//loop through all wavelengths and add up final color based on spd_pit*spd_track*rgb, return
 	for (float lambda = LambdaI; lambda <= LambdaF; lambda += LambdaStep)
 	{
-		// unit vectors
-		vec3 t_uv = cross(normalize(lightDir), normalize(eyeVec));	// Direction (orientation) of line light
-		vec3 L = gl_LightSource[0].position.xyz;	// Light position
-		
 		for (float t = 0; t < Llength; t += (Llength / 10.0))
 		{
 			vec3 k2_uv = normalize((-P) / abs(-P));
 			vec3 k1_uv = (P - L) / Llength - t_uv / Llength * t;	// must loop through t from 0 to Llength
 		
 			vec3 k1 = (1.0 / lambda) * (k1_uv - k2_uv);
-			vec3 k2 = (2 * PI) / lambda * k2_uv;
+			vec3 k2 = (2.0 * PI) / lambda * k2_uv;
 			
 			vec3 q = k1 - k2;
 			finalcolor += spd_pit(q, L, k2_uv, t, t_uv, lambda) * spd_track(q, L, k2_uv, t, t_uv, lambda) * lambda2rgb(lambda);
@@ -149,7 +172,7 @@ vec3 spd_diffuse()
 	float lambertTerm = dot(N,L);
 
 	vec4 LightSource = vec4 (1.0, 1.0, 1.0, 1.0);
-	vec4 diffuse = vec4 (0.8, 0.8, 0.0, 1.0);
+	vec4 diffuse = vec4 (0.2, 0.2, 0.2, 1.0);
 	vec4 specColor = vec4 (1.0, 1.0, 1.0, 1.0);
 	float shininess = 50.0;
 	if(lambertTerm > 0.0)
@@ -165,7 +188,6 @@ vec3 spd_diffuse()
 
 void main(void) {
 	// Convert coordinate system
-	//float theta = atan((P_tex.y - Center.y) / (P_tex.x - Center.x));	// not needed?
 	float r = sqrt(pow(P_tex.x - Center.x, 2.0) + pow(P_tex.y - Center.y, 2.0));
 	   
 	if (r <= HoleR || r > DiscR)
@@ -176,43 +198,7 @@ void main(void) {
 	else
 	{
 		// Implement CD shader here...
-		vec3 finalcolor = spd_mirror() + spd_diffuse() + spd_diffraction();
-		gl_FragColor = vec4(finalcolor, 1.0);
+		//gl_FragColor = vec4(spd_mirror() + spd_diffuse() + spd_diffraction(), 1.0);
+		gl_FragColor = vec4(spd_diffraction(), 1.0);
 	}     
 }
-
-// From example CD shader in book:
-	/*
-    // extract positions from input uniforms
-    vec3 lightPosition = gl_LightSource[0].position.xyz;
-    vec3 eyePosition   = -osg_ViewMatrix[3].xyz / osg_ViewMatrix[3].w;
-
-    // H = halfway vector between light and viewer from vertex
-    vec3 P = vec3(gl_ModelViewMatrix * gl_Vertex);
-    vec3 L = normalize(lightPosition - P);
-    vec3 V = normalize(eyePosition - P);
-    vec3 H = L + V;
-
-    // accumulate contributions from constructive interference
-    // over several spectral orders.
-    vec3 T  = gl_NormalMatrix * Tangent;
-    float u = abs(dot(T, H));
-    vec3 diffColor = vec3(0.0);
-    const int numSpectralOrders = 3;
-    for (int m = 1; m <= numSpectralOrders; ++m)
-    {
-        float lambda = GratingSpacing * u / float(m);
-        diffColor += lambda2rgb(lambda);
-    }
-
-    // compute anisotropic highlight for zero-order (m = 0) reflection.
-    vec3  N = gl_NormalMatrix * gl_Normal;
-    float w = dot(N, H);
-    float e = SurfaceRoughness * u / w;
-    vec3 hilight = exp(-e * e) * HighlightColor;
-
-    // write the values required for fixed function fragment processing
-    const float diffAtten = 0.8; // attenuation of the diffraction color
-    gl_FrontColor = vec4(diffAtten * diffColor + hilight, 1.0);
-    gl_Position = ftransform();
-    */
