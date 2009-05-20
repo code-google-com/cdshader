@@ -1,20 +1,37 @@
 // Helper Functions >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
+#include "CIEstd.h"
 #define	s2pi sqrt(2 * PI)
 
 /**
-* wavelengthToRGB - Converts a given wavelength value into an RGB
-* value.
+* convertColor - Converts the calculated SPD value to CIE using
+* the CIE standard illuminant values, and then to RGB
+*
+* See: http://hyperphysics.phy-astr.gsu.edu/HBASE/vision/colper.html
+*
+* This describes using the SPD to determine the CIE value, which 
+* can then be fairly easily converted to RGB
 **/
 color
-wavelengthToRGB
-(
-    // The wavelength to evaluate
-    float wavelength;
-)
+convertColor
+( float SPD; float wavelength;)
 {
-    // TODO: Convert from the wavelength to an RGB value
-    return color(0.0, 0.0, 0.0);
+	float X = getCIEcmX(wavelength);
+	float Y = getCIEcmY(wavelength);
+	float Z = getCIEcmZ(wavelength);
+	
+	// X part of CIE equation
+    float hue = SPD * X;
+    
+    // Y part of CIE equation
+    float saturation = SPD * Y;
+    
+    // Z part of CIE equation
+    float zval = SPD * Z;
+    
+    color CIEcolor = color "xyz" (hue, saturation, zval);
+    color r = ctransform("rgb", CIEcolor);
+    
+    return r;
 }
 
 /**
@@ -25,12 +42,9 @@ wavelengthToRGB
 * Defaults to standard normal distribution at 1
 *
 **/
-float
-gaussianDelta
-( float x = 1, float deviation = 1, float mean = 0 )
-{
-	double a = 1 / (deviation * s2pi);
-	double g = (x-mean)*(x-mean) / (2 * deviation * deviation);
+float gaussianDelta ( float x; float deviation; float mean; ) {
+	float a = 1 / (deviation * s2pi);
+	float g = (x-mean)*(x-mean) / (2 * deviation * deviation);
 	return a * exp(-g);
 }
 
@@ -40,14 +54,14 @@ gaussianDelta
 * SPDmirror - Represents the mirror contribution to the specular
 * power distribution of the surface.
 **/
-color
+float
 SPDmirror
 (
     // TODO: Define arguments for the function
 )
 {
     // TODO: Compute the mirrored surface color for the cd
-    return color(0.0, 0.0, 0.0);
+    return 0.0;
 }
 
 // SPD Diffuse >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -56,15 +70,15 @@ SPDmirror
 * SPDdiffuse - Represents the diffuse contribution to the specular
 * power distribution for the surface.
 **/
-color
+float
 SPDdiffuse
 (
     // The normal point to use
     normal N;
 )
 {
-    // Return the diffuse color
-    return diffuse( normalize(N) );
+    // Return the diffuse contribution
+    return 0.0; //float diffuse( normalize(N) );
 }
 
 // SPD Diffraction >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -114,7 +128,7 @@ SPDpit
 * specular power distribution, collected by light scattering and
 * diffracting on the surface.
 **/
-color
+float
 SPDdiffraction
 (
     // The Point
@@ -130,11 +144,11 @@ SPDdiffraction
     float iterations;
 )
 {
-    // The track SPD color
-    color trackColor = 0;
+    // The track SPD
+    float trackSPD = 0;
     
     // The pit SPD color
-    color pitColor = 0;
+    float pitSPD = 0;
     
     // The normal
     normal Nn = normalize(N);
@@ -195,16 +209,16 @@ SPDdiffraction
                 // If the values are equal to 0
                 if( trackComparator == 0.0 && pitComparator == 0.0 )
                 {
-                    // Add their color contributions to the return color
-                    trackColor += SPDtrack( lambda, n ) * wavelengthToRGB(lambda);
-                    pitColor += SPDpit( lambda, m ) * wavelengthToRGB(lambda);
+                    // Add their contributions to the return value
+                    trackSPD += SPDtrack( lambda, n );
+                    pitSPD += SPDpit( lambda, m );
                 }
             };
         };
     };
     
     // Return the color for the diffraction
-    return trackColor * pitColor;
+    return trackSPD * pitSPD;
 }
 
 // Main Shader >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -219,16 +233,16 @@ cdshader
     point cdPosition = point "shader" (0, 0, 0);
 
     // The radius of the hole for the cd
-    float radiusOfHole = 0;
+    float radiusOfHole = 2.0;
     
     // The radius of the disc for the cd
-    float radiusOfDisc = 5.0;
+    float radiusOfDisc = 8.0;
 
     // The minimum wavelength for the cd shader
-    float minimumWavelength = 0;
+    float minimumWavelength = 360;
     
     // The maximum wavelength for the cd shader
-    float maximumWavelength = 100;
+    float maximumWavelength = 830;
     
     // The delta value for stepping between wavelengths
     float wavelengthDelta = 100;
@@ -239,6 +253,7 @@ cdshader
 {
     // Get the distance from the current point to the cd center
     float dist = distance( cdPosition, P );
+    color Cdisc = 0;
     
     // If we're inside the cd
     if( dist <= radiusOfDisc && dist >= radiusOfHole )
@@ -248,30 +263,27 @@ cdshader
     
         // Loop through the wavelengths
         for
-        (
-            // Set the wavelength for the minimum value
-            wavelength = minimumWavelength;
-        
-            // Do so until we are above the maximum wavelength
-            wavelength <= maximumWavelength;
-        
-            // Increment by delta
-            wavelength += wavelengthDelta
-        )
-        {
+        ( wavelength = minimumWavelength; 
+          wavelength <= maximumWavelength; 
+          wavelength += wavelengthDelta ) {
             // Get the total SPD value for the cd shader
-            color SPD =
+            float SPD =
                 SPDmirror() +
                 SPDdiffuse( N ) +
                 SPDdiffraction( P, N, wavelength, iterations );
+        
+        	// Use the total SPD to get the color contribution
+        	// temporarily set SPD to a constant so something shows up
+        	SPD = 0.5;
+        	Cdisc += convertColor(SPD, wavelength);
         }
     }
-    else
+    else 
     {
         // Set the opacity
         Oi = 0.0;
     }
-    
+
     // Set the color and the opacity
-    Ci = Cs * Oi;
+    Ci = Cdisc * Oi;
 }
