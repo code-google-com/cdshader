@@ -45,6 +45,7 @@ convertColor
 float gaussianDelta ( float x; float deviation; float mean; ) {
 	float a = 1 / (deviation * s2pi);
 	float g = (x-mean)*(x-mean) / (2 * deviation * deviation);
+	//printf("X: %f, Dev: %f, Mean: %f\n", x, deviation, mean );
 	return a * exp(-g);
 }
 
@@ -168,6 +169,7 @@ SPDpit
     vector y;
 )
 {
+	//printf("Are we here?\n");
     float pl2 = (2 * PI) / lambda;
     float f = (A.y) + (B.y * t);
     float z = (b * pl2 * f) - (2 * PI * m);
@@ -233,15 +235,16 @@ SPDdiffraction
 	vector x_uv = normalize( center - P );
 	vector y_uv = Nn^(x_uv);
 
-	float Llength = 0.0;
+	float Llength = 1.0;
 
 	vector A;
 	vector B;
+	vector C;
 
     // Illuminate
     illuminance( P, Nn, PI/2 )
     {
-    	Llength = length(L);
+    	C = P - L;
         // Get the light normal
         vector t_uv = normalize(L);
         
@@ -254,6 +257,8 @@ SPDdiffraction
         
     float start = -600;
     float end = 600;
+    Llength = length( C );
+    //print( "l: %f\n", Llength );
         
     // Loop through for the iterations
     for
@@ -284,6 +289,13 @@ SPDdiffraction
          }
      	m += 1.0;
      }
+     
+     if( trackSPD != 0.0 || pitSPD != 0.0 )
+     {
+     	//printf( "Track: %f, Pit: %f\n", trackSPD, pitSPD );
+     }
+    
+    //printf( "Track: %f, Pit: %f\n", trackSPD, pitSPD );
     
     // Return the SPD value for the diffraction
     return trackSPD * pitSPD;
@@ -346,6 +358,8 @@ cdshader
                 SPDmirror(Ks) +
                 SPDdiffuse(Kd) +
                 SPDdiffraction( P, N, wavelength, iterations, cdPosition );
+            
+            //printf("SPD: %f\n", SPD);
         
         	// Use the total SPD to get the color contribution
         	Cdisc += convertColor(SPD, wavelength);
