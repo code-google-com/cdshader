@@ -224,7 +224,7 @@ void setupShaders() {
 #if 0
    GLfloat position[]       = { 0.0, 10.0, -6.0, 0.0 };
 #else
-   GLfloat position[]       = { 0.0, 20.0, -40.0, 0.0 };
+   GLfloat position[]       = { 0.0, 10.0, -40.0, 0.0 };
 #endif
 
 
@@ -277,7 +277,7 @@ void drawscene( void ) {
 	glUniform1f(HoleR, 1.0);	// radius of hole in the middle
 
 	GLint Llength = glGetUniformLocation(cd, "Llength");
-	glUniform1f(Llength, 5.0);	// length of line source
+	glUniform1f(Llength, 1.0);	// length of line source
 	GLint a = glGetUniformLocation(cd, "Aa");
 	glUniform1f(a, 1600);		// track separation distance
 	GLint b = glGetUniformLocation(cd, "Bb");
@@ -360,22 +360,22 @@ void keyboard(unsigned char c, int x, int y) {
 		exit(0);
 	}
 	else if (c == 'a') {
-		angle = 10.0;
+		angle = 5.0;
 		axis[1] = 1.0;
 		axis[2] = axis[0] = 0.0;
 	}
 	else if (c == 'd') {
-		angle = -10.0;
+		angle = -5.0;
 		axis[1] = 1.0;
 		axis[2] = axis[0] = 0.0;
 	}
 	else if (c == 'w') {
-		angle = -10.0;
+		angle = -5.0;
 		axis[0] = 1.0;
 		axis[1] = axis[2] = 0.0;
 	}
 	else if (c == 's') {
-		angle = 10.0;
+		angle = 5.0;
 		axis[0] = 1.0;
 		axis[1] = axis[2] = 0.0;
 	}
