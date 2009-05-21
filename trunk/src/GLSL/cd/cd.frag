@@ -16,7 +16,6 @@ uniform float DiscR;	// radius of disc
 uniform float HoleR;	// radius of hole in disc
 
 uniform float Llength;		// Length of line light source
-//uniform L;					// Orientation is determined by taking lightDir x eyeVec so that it is fixed as a line source
 
 uniform float Aa;		// track separation distance
 uniform float Bb;		// pit sequence length (varies between 900nm and 3300nm in steps of 300nm)
@@ -83,13 +82,13 @@ float spd_track(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float lambda)
 		//float equation_14_1 = Aa * ((2.0 * PI) / (lambda / 1000.0)) * (Ax.x + Bx.x * t) - 2.0 * PI * n;
 		//if (equation_14_1 == 0)	// must be true for there to be a contribution by this.
 		//{
-			spd += 2.0 * gauss(Aa * qx.x - 2.0 * PI * n);
+			spd += 1.0 * gauss(Aa * qx.x - 2.0 * PI * n);
 		//}
 		
 		//float equation_14_2 = Aa * ((2.0 * PI) / (lambda / 1000.0)) * (Ax.x + Bx.x * t) - 2.0 * PI * -n;
 		//if (equation_14_2 == 0)	// must be true for there to be a contribution by this.
 		//{
-			spd += 2.0 * gauss(Aa * qx.x - 2.0 * PI * -n);
+			spd += 1.0 * gauss(Aa * qx.x - 2.0 * PI * -n);
 		//}
 	}
 	
@@ -155,7 +154,8 @@ vec3 spd_diffraction()
 			vec3 k2 = (2.0 * PI) / lambda * k2_uv;
 			
 			vec3 q = k1 - k2;
-			finalcolor += spd_pit(q, L, k2_uv, t, t_uv, lambda) * spd_track(q, L, k2_uv, t, t_uv, lambda) * lambda2rgb(lambda);
+			//finalcolor += convertColor(spd_pit(q, L, k2_uv, t, t_uv, lambda), lambda) + convertColor(spd_track(q, L, k2_uv, t, t_uv, lambda), lambda);
+			finalcolor += (spd_pit(q, L, k2_uv, t, t_uv, lambda) + spd_track(q, L, k2_uv, t, t_uv, lambda)) * lambda2rgb(lambda);
 		}
 	}
 	

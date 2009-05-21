@@ -170,6 +170,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\CIEtoRGB.frag"
+			>
+		</File>
+		<File
 			RelativePath=".\glew32.dll"
 			>
 		</File>
