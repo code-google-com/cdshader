@@ -117,19 +117,19 @@ SPDtrack
     float t;
     
     // A vector
-    point A;
+    vector A;
     
     // B vector
-    point B;
+    vector B;
     
     // x vector
-    point x;
+    vector x;
 )
 {
-    float 2pl = (2 * PI) / lambda;
-    float f = (A * x) + (B * x * t);
-    float z = (a * 2pl * f) - (2 * PI * n);
-    float SPDtrack = cn * gaussianDelta( z );
+    float pl2 = (2 * PI) / lambda;
+    float f = (A.x) + (B.x * t);
+    float z = (a * pl2 * f) - (2 * PI * n);
+    float SPDtrack = cn * gaussianDelta( z, 1, 10 );
     
     return SPDtrack;
 }
@@ -159,19 +159,19 @@ SPDpit
     float t;
     
     // A vector
-    point A;
+   	vector A;
     
     // B vector
-    point B;
+    vector B;
     
     // x vector
-    point x;
+    vector y;
 )
 {
-    float 2pl = (2 * PI) / lambda;
-    float f = (A * y) + (B * y * t);
-    float z = (b * 2pl * f) - (2 * PI * m);
-    float SPDpit = cm * gaussianDelta( z );
+    float pl2 = (2 * PI) / lambda;
+    float f = (A.y) + (B.y * t);
+    float z = (b * pl2 * f) - (2 * PI * m);
+    float SPDpit = cm * gaussianDelta( z, 1, 10 );
     
     return SPDpit;
 }
@@ -195,6 +195,9 @@ SPDdiffraction
     
     // The number of iterations for the spike intensity
     float iterations;
+    
+    // Center of disc
+    point center;
 )
 {
     // The track SPD
@@ -207,7 +210,7 @@ SPDdiffraction
     normal Nn = normalize(N);
     
     // The light normal
-    vector Ln;
+    normal Ln;
     
     // Get the iteration half-way value
     float iterationHalf = ceil(iterations / 2);
@@ -223,60 +226,66 @@ SPDdiffraction
     // The pit separation
     float pitSeparation = 900;
     
-    point x_uv;
-    point y_uv;
+    float cn = 600;
+    float cm = 600;
     
-    point k2_uv = E - P / distance(E - P);
-	
+    vector k2_uv = (E - P) / length(E - P);
+	vector x_uv = normalize( center - P );
+	vector y_uv = Nn^(x_uv);
+
+	float Llength = 0.0;
+
+	vector A;
+	vector B;
 
     // Illuminate
     illuminance( P, Nn, PI/2 )
     {
+    	Llength = length(L);
         // Get the light normal
-        Ln = normalize(L);
+        vector t_uv = normalize(L);
         
-        // Loop through for the iterations
-        for
-        (
-            // The current iteration for the track
-            n = -iterationHalf;
-            
-            // Compare versus the max value of the iteration
-            n <= iterationHalf;
-            
-            // Increment
-            n += 1.0
-        )
-        {
-            // Loop through for the pit
-            for
-            (
-                // The current iteration for the track
-                m = -iterationHalf;
-            
-                // Compare versus the max value of the iteration
-                m <= iterationHalf;
-            
-                // Increment
-                m += 1.0
-            )
-            {
-                // TODO: Get the comparison values to see if we have a contribution
-                float trackComparator = 0.0;
-                float pitComparator = 0.0;
+        // light direction thingy
+        float d = length( L - P );
+        
+        A = vector( (( P - L ) / d) - k2_uv);
+        B = t_uv / d;
+    }
+        
+    float start = -600;
+    float end = 600;
+        
+    // Loop through for the iterations
+    for
+    (
+        // The current iteration for the track
+        n = m = start;
+        
+        // Compare versus the max value of the iteration
+        n <= end && m <= end;
+        
+        // Increment
+        n += 1.0
+    )
+    {
+     // TODO: Get the comparison values to see if we have a contribution
+     float trackComparator = 0.0;
+     float pitComparator = 0.0;
                 
-                // If the values are equal to 0
-                if( trackComparator == 0.0 && pitComparator == 0.0 )
-                {
-                    // Add their contributions to the return value
-                    trackSPD += SPDtrack( lambda, n );
-                    pitSPD += SPDpit( lambda, m );
-                }
-            };
-        };
-    };
+         // If the values are equal to 0
+         if( trackComparator == 0.0 && pitComparator == 0.0 )
+         {
+         	float t = 0;
+         	for (t = 0; t < Llength; t+=1) {
+             	// Add their contributions to the return value
+             	trackSPD += SPDtrack( lambda, n, trackSeparation, cn, t, A, B, x_uv );
+             	pitSPD += SPDpit( lambda, m, pitSeparation, cm, t, A, B, y_uv );
+         	}
+         }
+     	m += 1.0;
+     }
     
-    // Return the color for the diffraction
+    // Return the SPD value for the diffraction
     return trackSPD * pitSPD;
 }
 
@@ -336,7 +345,7 @@ cdshader
             float SPD =
                 SPDmirror(Ks) +
                 SPDdiffuse(Kd) +
-                SPDdiffraction( P, N, wavelength, iterations );
+                SPDdiffraction( P, N, wavelength, iterations, cdPosition );
         
         	// Use the total SPD to get the color contribution
         	Cdisc += convertColor(SPD, wavelength);
