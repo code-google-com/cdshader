@@ -110,7 +110,7 @@ GLobject cd;
  * Setup the shaders for the scene
  */
 void setupShaders() {
-	char *cd_vs = NULL, *cd_fs = NULL;
+	char *cd_vs = NULL, *cd_fs = NULL;//, *std_fs = NULL;
 		
 	FILE* cd_vs_in = fopen("cd.vert", "rt");
 	if (cd_vs_in) {
@@ -155,28 +155,61 @@ void setupShaders() {
 		fclose(cd_fs_in);
 	}
 
+	/*
+	// Fragment program to convert STD to CIE values
+	FILE* std_fs_in = fopen("CIEtoRGB.frag", "rt");
+	if (std_fs_in) {
+		fseek(std_fs_in, 0, SEEK_END);
+		int size = ftell(std_fs_in);
+		printf("size = %d\n", size);
+		rewind(std_fs_in);
+		std_fs = (char*)malloc((size + 1) * sizeof(char));
+		if (std_fs) {
+			fread(std_fs, sizeof(char), size, std_fs_in);
+			std_fs[size] = '\0';
+		
+			puts("std_fs");
+			puts(std_fs); fflush(stdout);
+		}
+		else {
+			perror("std_fs");
+			exit(1);
+		}
+				
+		fclose(std_fs_in);
+	}
+	*/
+
 	// Should have read in all the shaders now
 	// Attach shaders to the scene
-	GLobject cd_vs_p, cd_fs_p;
+	GLobject cd_vs_p, cd_fs_p;//, std_fs_p;
 	cd_vs_p = glCreateShader(GL_VERTEX_SHADER);
 	cd_fs_p = glCreateShader(GL_FRAGMENT_SHADER);
+	//std_fs_p = glCreateShader(GL_FRAGMENT_SHADER);
 	
-	const char *cd_vs2 = cd_vs, *cd_fs2 = cd_fs;
+	const char *cd_vs2 = cd_vs, *cd_fs2 = cd_fs;//, *std_fs2 = std_fs;
 	
 	glShaderSource(cd_vs_p, 1, &cd_vs2, NULL);
 	glShaderSource(cd_fs_p, 1, &cd_fs2, NULL);
+	//glShaderSource(std_fs_p, 1, &std_fs2, NULL);
 	
-	free(cd_vs); free(cd_fs);
+	free(cd_vs); free(cd_fs); //free(std_fs);
 	
 	glCompileShader(cd_vs_p);
 	puts("Compile cd_vs");
 	printShaderInfoLog(cd_vs_p);
+/*
+	glCompileShader(std_fs_p);
+	puts("Compile std_fs");
+	printShaderInfoLog(std_fs_p);
+*/
 	glCompileShader(cd_fs_p);
 	puts("Compile cd_fs");
 	printShaderInfoLog(cd_fs_p);
 	
 	cd = glCreateProgram();
 	glAttachShader(cd, cd_vs_p);
+	//glAttachShader(cd, std_fs_p);
 	glAttachShader(cd, cd_fs_p);
 	glLinkProgram(cd);
 	puts("Link cd");

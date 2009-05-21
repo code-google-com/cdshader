@@ -79,17 +79,17 @@ float spd_track(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float lambda)
 		
 		vec3 qx = cross(q, vec3(0.0, 0.0, P.z));
 		
-		//float equation_14_1 = Aa * ((2.0 * PI) / (lambda / 1000.0)) * (Ax.x + Bx.x * t) - 2.0 * PI * n;
-		//if (equation_14_1 == 0)	// must be true for there to be a contribution by this.
-		//{
+		float equation_14_1 = Aa * ((2.0 * PI) / (lambda / 1000.0)) * (Ax.x + Bx.x * t) - 2.0 * PI * n;
+		if (equation_14_1 == 0)	// must be true for there to be a contribution by this.
+		{
 			spd += 1.0 * gauss(Aa * qx.x - 2.0 * PI * n);
-		//}
+		}
 		
-		//float equation_14_2 = Aa * ((2.0 * PI) / (lambda / 1000.0)) * (Ax.x + Bx.x * t) - 2.0 * PI * -n;
-		//if (equation_14_2 == 0)	// must be true for there to be a contribution by this.
-		//{
+		float equation_14_2 = Aa * ((2.0 * PI) / (lambda / 1000.0)) * (Ax.x + Bx.x * t) - 2.0 * PI * -n;
+		if (equation_14_2 == 0)	// must be true for there to be a contribution by this.
+		{
 			spd += 1.0 * gauss(Aa * qx.x - 2.0 * PI * -n);
-		//}
+		}
 	}
 	
 	return spd;
@@ -113,17 +113,17 @@ float spd_pit(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float lambda)
 		
 		float qy = dot(q, P - Center);
 		
-		//float equation_15_1 = Bb * ((2.0 * PI) / (lambda / 1000.0)) * (Ay + By * t) - 2.0 * PI * m;
-		//if (equation_15_1 == 0.0)	// must be true for there to be a contribution by this.
-		//{
+		float equation_15_1 = Bb * ((2.0 * PI) / (lambda / 1000.0)) * (Ay + By * t) - 2.0 * PI * m;
+		if (equation_15_1 == 0.0)	// must be true for there to be a contribution by this.
+		{
 			spd += 2.0 * gauss(Bb * qy - 2.0 * PI * m);
-		//}
+		}
 		
-		//float equation_15_2 = Bb * ((2.0 * PI) / (lambda / 1000.0)) * (Ay + By * t) - 2.0 * PI * -m;
-		//if (equation_15_2 == 0.0)	// must be true for there to be a contribution by this.
-		//{
+		float equation_15_2 = Bb * ((2.0 * PI) / (lambda / 1000.0)) * (Ay + By * t) - 2.0 * PI * -m;
+		if (equation_15_2 == 0.0)	// must be true for there to be a contribution by this.
+		{
 			spd += 2.0 * gauss(Bb * qy - 2.0 * PI * -m);
-		//}
+		}
 	}
 	
 	return spd;
