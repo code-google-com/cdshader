@@ -118,15 +118,15 @@ void setupShaders() {
 		int size = ftell(cd_vs_in);
 		printf("size = %d\n", size);
 		rewind(cd_vs_in);
-		cd_vs = (char*)malloc((size + 1) * sizeof(char));
+		cd_vs = (char*)calloc(size + 1, sizeof(char));
 		if (cd_vs) {
 			fread(cd_vs, sizeof(char), size, cd_vs_in);
-			cd_vs[size] = '\0';
 		
 			puts("cd_vs");
 			puts(cd_vs); fflush(stdout);
 		}
 		else {
+			fclose(cd_vs_in);
 			perror("cd_vs");
 			exit(1);
 		}
@@ -139,15 +139,15 @@ void setupShaders() {
 		int size = ftell(cd_fs_in);
 		printf("size = %d\n", size);
 		rewind(cd_fs_in);
-		cd_fs = (char*)malloc((size + 1) * sizeof(char));
+		cd_fs = (char*)calloc(size + 1, sizeof(char));
 		if (cd_fs) {
 			fread(cd_fs, sizeof(char), size, cd_fs_in);
-			cd_fs[size] = '\0';
 		
 			puts("cd_fs");
 			puts(cd_fs); fflush(stdout);
 		}
 		else {
+			fclose(cd_fs_in);
 			perror("cd_fs");
 			exit(1);
 		}
@@ -163,15 +163,15 @@ void setupShaders() {
 		int size = ftell(std_fs_in);
 		printf("size = %d\n", size);
 		rewind(std_fs_in);
-		std_fs = (char*)malloc((size + 1) * sizeof(char));
+		std_fs = (char*)calloc((size + 1), sizeof(char));
 		if (std_fs) {
 			fread(std_fs, sizeof(char), size, std_fs_in);
-			std_fs[size] = '\0';
 		
 			puts("std_fs");
 			puts(std_fs); fflush(stdout);
 		}
 		else {
+			fclose(std_fs_in);
 			perror("std_fs");
 			exit(1);
 		}
@@ -179,10 +179,11 @@ void setupShaders() {
 		fclose(std_fs_in);
 	}
 	*/
+	
 
 	// Should have read in all the shaders now
 	// Attach shaders to the scene
-	GLobject cd_vs_p, cd_fs_p;//, std_fs_p;
+	GLobject cd_vs_p, cd_fs_p, std_fs_p;
 	cd_vs_p = glCreateShader(GL_VERTEX_SHADER);
 	cd_fs_p = glCreateShader(GL_FRAGMENT_SHADER);
 	//std_fs_p = glCreateShader(GL_FRAGMENT_SHADER);
@@ -193,24 +194,26 @@ void setupShaders() {
 	glShaderSource(cd_fs_p, 1, &cd_fs2, NULL);
 	//glShaderSource(std_fs_p, 1, &std_fs2, NULL);
 	
-	free(cd_vs); free(cd_fs); //free(std_fs);
+	free(cd_vs); free(cd_fs);// free(std_fs);
 	
 	glCompileShader(cd_vs_p);
 	puts("Compile cd_vs");
 	printShaderInfoLog(cd_vs_p);
-/*
-	glCompileShader(std_fs_p);
-	puts("Compile std_fs");
-	printShaderInfoLog(std_fs_p);
-*/
+
 	glCompileShader(cd_fs_p);
 	puts("Compile cd_fs");
 	printShaderInfoLog(cd_fs_p);
 	
+	/*
+	glCompileShader(std_fs_p);
+	puts("Compile std_fs");
+	printShaderInfoLog(std_fs_p);
+	*/
+
 	cd = glCreateProgram();
 	glAttachShader(cd, cd_vs_p);
-	//glAttachShader(cd, std_fs_p);
 	glAttachShader(cd, cd_fs_p);
+	//glAttachShader(cd, std_fs_p);
 	glLinkProgram(cd);
 	puts("Link cd");
 	printProgramInfoLog(cd);
@@ -221,7 +224,7 @@ void setupShaders() {
 #if 0
    GLfloat position[]       = { 0.0, 10.0, -6.0, 0.0 };
 #else
-   GLfloat position[]       = { 0.0, 10.0, -40.0, 0.0 };
+   GLfloat position[]       = { 0.0, 20.0, -40.0, 0.0 };
 #endif
 
 
@@ -248,10 +251,6 @@ void init( void ) {
 
 	glEnable( GL_LIGHTING );
 	glEnable( GL_LIGHT0 );
-
-
-	// Set up arrays for CIEtoSTD conversion as textures in OpenGL:
-
 }
 
 
@@ -284,11 +283,11 @@ void drawscene( void ) {
 	GLint b = glGetUniformLocation(cd, "Bb");
 	glUniform1f(b, 2400.0);		// pit sequence length
 	GLint LambdaI = glGetUniformLocation(cd, "LambdaI");
-	glUniform1f(LambdaI, 360);	// Starting wavelength
+	glUniform1i(LambdaI, 360);	// Starting wavelength
 	GLint LambdaStep = glGetUniformLocation(cd, "LambdaStep");
-	glUniform1f(LambdaStep, 10);	// step value for wavelength
+	glUniform1i(LambdaStep, 20);	// step value for wavelength
 	GLint LambdaF = glGetUniformLocation(cd, "LambdaF");
-	glUniform1f(LambdaF, 830);	// Ending value for wavelength
+	glUniform1i(LambdaF, 830);	// Ending value for wavelength
 #endif
 	glMaterialfv( GL_FRONT, GL_AMBIENT,   mat_ambient_color );
 	glMaterialfv( GL_FRONT, GL_DIFFUSE,   mat_diffuse );
@@ -361,22 +360,22 @@ void keyboard(unsigned char c, int x, int y) {
 		exit(0);
 	}
 	else if (c == 'a') {
-		angle = 15.0;
+		angle = 10.0;
 		axis[1] = 1.0;
 		axis[2] = axis[0] = 0.0;
 	}
 	else if (c == 'd') {
-		angle = -5.0;
+		angle = -10.0;
 		axis[1] = 1.0;
 		axis[2] = axis[0] = 0.0;
 	}
 	else if (c == 'w') {
-		angle = -5.0;
+		angle = -10.0;
 		axis[0] = 1.0;
 		axis[1] = axis[2] = 0.0;
 	}
 	else if (c == 's') {
-		angle = 5.0;
+		angle = 10.0;
 		axis[0] = 1.0;
 		axis[1] = axis[2] = 0.0;
 	}
