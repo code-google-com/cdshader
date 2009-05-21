@@ -285,7 +285,7 @@ void drawscene( void ) {
 	GLint LambdaI = glGetUniformLocation(cd, "LambdaI");
 	glUniform1i(LambdaI, 360);	// Starting wavelength
 	GLint LambdaStep = glGetUniformLocation(cd, "LambdaStep");
-	glUniform1i(LambdaStep, 20);	// step value for wavelength
+	glUniform1i(LambdaStep, 10);	// step value for wavelength
 	GLint LambdaF = glGetUniformLocation(cd, "LambdaF");
 	glUniform1i(LambdaF, 830);	// Ending value for wavelength
 #endif
