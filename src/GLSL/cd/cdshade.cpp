@@ -116,6 +116,7 @@ void setupShaders() {
 	if (cd_vs_in) {
 		fseek(cd_vs_in, 0, SEEK_END);
 		int size = ftell(cd_vs_in);
+		printf("size = %d\n", size);
 		rewind(cd_vs_in);
 		cd_vs = (char*)malloc((size + 1) * sizeof(char));
 		if (cd_vs) {
@@ -136,6 +137,7 @@ void setupShaders() {
 	if (cd_fs_in) {
 		fseek(cd_fs_in, 0, SEEK_END);
 		int size = ftell(cd_fs_in);
+		printf("size = %d\n", size);
 		rewind(cd_fs_in);
 		cd_fs = (char*)malloc((size + 1) * sizeof(char));
 		if (cd_fs) {
@@ -194,26 +196,28 @@ void setupShaders() {
  *  and lighting model.  Do not specify a material property here.
  */
 void init( void ) {
+	GLfloat ambient[]        = { 0.2, 0.2, 0.2, 1.0 };
+	GLfloat diffuse[]        = { 1.0, 1.0, 1.0, 1.0 };
+	GLfloat specular[]       = { 1.0, 1.0, 1.0, 1.0 };
 
-   GLfloat ambient[]        = { 0.2, 0.2, 0.2, 1.0 };
-   GLfloat diffuse[]        = { 1.0, 1.0, 1.0, 1.0 };
-   GLfloat specular[]       = { 1.0, 1.0, 1.0, 1.0 };
-   
-   GLfloat lmodel_ambient[] = { 0.4, 0.4, 0.4, 1.0 };
-   GLfloat local_view[]     = { 0.0 };
+	GLfloat lmodel_ambient[] = { 0.4, 0.4, 0.4, 1.0 };
+	GLfloat local_view[]     = { 0.0 };
 
-   glClearColor( 0.1, 0.1, 0.1, 0.0 );
-   glEnable( GL_DEPTH_TEST );
-   glShadeModel( GL_SMOOTH );
+	glClearColor( 0.1, 0.1, 0.1, 0.0 );
+	glEnable( GL_DEPTH_TEST );
+	glShadeModel( GL_SMOOTH );
 
-   glLightfv( GL_LIGHT0, GL_AMBIENT, ambient );
-   glLightfv( GL_LIGHT0, GL_DIFFUSE, diffuse );
-   glLightfv( GL_LIGHT0, GL_POSITION, position );
-   glLightModelfv( GL_LIGHT_MODEL_AMBIENT, lmodel_ambient );
-   glLightModelfv( GL_LIGHT_MODEL_LOCAL_VIEWER, local_view );
+	glLightfv( GL_LIGHT0, GL_AMBIENT, ambient );
+	glLightfv( GL_LIGHT0, GL_DIFFUSE, diffuse );
+	glLightfv( GL_LIGHT0, GL_POSITION, position );
+	glLightModelfv( GL_LIGHT_MODEL_AMBIENT, lmodel_ambient );
+	glLightModelfv( GL_LIGHT_MODEL_LOCAL_VIEWER, local_view );
 
-   glEnable( GL_LIGHTING );
-   glEnable( GL_LIGHT0 );
+	glEnable( GL_LIGHTING );
+	glEnable( GL_LIGHT0 );
+
+
+	// Set up arrays for CIEtoSTD conversion as textures in OpenGL:
 
 }
 
@@ -241,17 +245,17 @@ void drawscene( void ) {
 	glUniform1f(HoleR, 1.0);	// radius of hole in the middle
 
 	GLint Llength = glGetUniformLocation(cd, "Llength");
-	glUniform1f(Llength, 10.0);	// length of line source
+	glUniform1f(Llength, 5.0);	// length of line source
 	GLint a = glGetUniformLocation(cd, "Aa");
-	glUniform1f(a, 300);		// track separation distance
+	glUniform1f(a, 1600);		// track separation distance
 	GLint b = glGetUniformLocation(cd, "Bb");
-	glUniform1f(b, 1200.0);		// pit sequence length
+	glUniform1f(b, 2400.0);		// pit sequence length
 	GLint LambdaI = glGetUniformLocation(cd, "LambdaI");
-	glUniform1f(LambdaI, 400);	// Starting wavelength
+	glUniform1f(LambdaI, 360);	// Starting wavelength
 	GLint LambdaStep = glGetUniformLocation(cd, "LambdaStep");
-	glUniform1f(LambdaStep, 20);	// step value for wavelength
+	glUniform1f(LambdaStep, 10);	// step value for wavelength
 	GLint LambdaF = glGetUniformLocation(cd, "LambdaF");
-	glUniform1f(LambdaF, 700);	// Ending value for wavelength
+	glUniform1f(LambdaF, 830);	// Ending value for wavelength
 #endif
 	glMaterialfv( GL_FRONT, GL_AMBIENT,   mat_ambient_color );
 	glMaterialfv( GL_FRONT, GL_DIFFUSE,   mat_diffuse );
