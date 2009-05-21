@@ -65,7 +65,7 @@ float spd_track(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float d, int lam
 {
 	float spd = 0.0;
 	// loop through some values
-	for (int n = 1; n <= 10; n += 1)
+	for (int n = 5; n <= 15; n += 1)
 	{
 		// condition:
 		//   a * ((2 * PI) / lambda) * (Ax + Bx * t) - 2 * PI * n == 0      AND
@@ -73,19 +73,19 @@ float spd_track(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float d, int lam
 		//vec3 A = (P - L) / d - k2_uv;
 		//vec3 B = t_uv / d;
 		
-		//float Ax = length(cross(A, vec3(0.0, 0.0, P.z)));
-		//float Bx = length(cross(B, vec3(0.0, 0.0, P.z)));
+		//float Ax = dot(A, cross(normalize(P_tex - Center), vec3(0.0, 0.0, 1.0)));
+		//float Bx = dot(B, cross(normalize(P_tex - Center), vec3(0.0, 0.0, 1.0)));
 		
-		float qx = dot(q, cross(normalize(P_tex - Center), vec3(0.0, 0.0, 1.0)));
+		float qx = dot(q, cross(normalize(P_tex - Center), vec3(0.0, 1.0, 0.0)));
 		
 		//float equation_14_1 = Aa * ((2.0 * PI) / lambda) * (Ax + Bx * t) - 2.0 * PI * n;
-		//if (equation_14_1 == 0)	// must be true for there to be a contribution by this.
+		//if (equation_14_1 == 0.0)	// must be true for there to be a contribution by this.
 		//{
 			spd += gauss(Aa * qx - 2.0 * PI * n);	// Cn = 1.0
 		//}
 		
 		//float equation_14_2 = Aa * ((2.0 * PI) / lambda) * (Ax + Bx * t) - 2.0 * PI * -n;
-		//if (equation_14_2 == 0)	// must be true for there to be a contribution by this.
+		//if (equation_14_2 == 0.0)	// must be true for there to be a contribution by this.
 		//{
 			spd += gauss(Aa * qx - 2.0 * PI * -n); // Cn = 1.0
 		//}
@@ -98,7 +98,7 @@ float spd_pit(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float d, int lambd
 {
 	float spd = 0.0;
 	// loop through some values
-	for (int m = 1; m <= 10; m += 1)
+	for (int m = 5; m <= 15; m += 1)
 	{
 		// condition:
 		//   a * ((2 * PI) / lambda) * (Ax + Bx * t) - 2 * PI * n == 0      AND
@@ -127,11 +127,6 @@ float spd_pit(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float d, int lambd
 	return spd;
 }
 
-vec3 spd_mirror()
-{
-	return vec3(0.0);
-}
-
 vec3 spd_diffraction()
 {
 	vec3 finalcolor = vec3(0.0);
@@ -139,6 +134,7 @@ vec3 spd_diffraction()
 	// unit vectors
 	vec3 L = vec3(gl_ModelViewMatrix * gl_LightSource[0].position);	// Light position
 	vec3 t_uv = normalize(cross(lightDir, L));	// Direction (orientation) of line light
+	float num_spikes = 30.0;
 	
 	//loop through all wavelengths and add up final color based on spd_pit*spd_track*rgb, return
 	for (int lambda = LambdaI; lambda <= LambdaF; lambda += LambdaStep)
@@ -146,13 +142,13 @@ vec3 spd_diffraction()
 		vec3 k2_uv = normalize(-P / abs(-P));
 		vec3 k2 = (2.0 * PI / lambda) * k2_uv;
 		float d = distance(P, L);
-		for (float t = 0.0; t < Llength; t += (Llength / 10.0))
+		for (float t = 0.0; t < Llength; t += (Llength / num_spikes))
 		{
 			vec3 k1_uv = normalize((P - L) / d - (t_uv / d) * t);	// must loop through t from 0 to Llength
 			vec3 k1 = (2.0 * PI / lambda) * k1_uv;
 			
 			vec3 q = k1 - k2;
-			finalcolor += (spd_pit(q, L, k2_uv, t, t_uv, d, lambda) * spd_track(q, L, k2_uv, t, t_uv, d, lambda)) * lambda2rgb(lambda);
+			finalcolor += (spd_pit(q, L, k2_uv, t, t_uv, d, lambda) * spd_track(q, L, k2_uv, t, t_uv, d, lambda)) * lambda2rgb(lambda) / num_spikes;
 			//finalcolor += (spd_track(q, L, k2_uv, t, t_uv, d, lambda)) * lambda2rgb(lambda);
 			//finalcolor += (spd_pit(q, L, k2_uv, t, t_uv, d, lambda)) * lambda2rgb(lambda);
 		}
@@ -161,19 +157,19 @@ vec3 spd_diffraction()
 	return finalcolor;
 }
 
-vec3 spd_diffuse()
+vec3 spd_phong()
 {
 	// Taken from plastic shader in lab1
-	vec4 final_color = vec4(0.3, 0.3, 0.3, 1.0);
+	vec4 final_color = vec4(0.1, 0.1, 0.1, 1.0);
 	        
 	vec3 N = normalize(normal);
 	vec3 L = normalize(lightDir);
 	float lambertTerm = dot(N,L);
 
 	vec4 LightSource = vec4 (1.0, 1.0, 1.0, 1.0);
-	vec4 diffuse = vec4 (0.2, 0.2, 0.2, 1.0);
+	vec4 diffuse = vec4 (0.1, 0.1, 0.1, 1.0);
 	vec4 specColor = vec4 (1.0, 1.0, 1.0, 1.0);
-	float shininess = 50.0;
+	float shininess = 300.0;
 	if(lambertTerm > 0.0)
 	{
 	   final_color += LightSource * diffuse * lambertTerm;
@@ -197,7 +193,7 @@ void main(void) {
 	else
 	{
 		// Implement CD shader here...
-		//gl_FragColor = vec4(spd_mirror() + spd_diffuse() + spd_diffraction(), 1.0);
-		gl_FragColor = vec4(spd_diffraction(), 1.0);
+		gl_FragColor = vec4(spd_phong() + spd_diffraction(), 1.0);
+		//gl_FragColor = vec4(spd_diffraction(), 1.0);
 	}     
 }
