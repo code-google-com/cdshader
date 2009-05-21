@@ -54,9 +54,9 @@ vec3 S(float t)
 
 float gauss(float x)
 {
-	float sqrt_variance = 0.1;
+	float sqrt_variance = 2.0;
 	float Ca = 1.0 / (sqrt_variance * sqrt(2.0 * PI));
-	float Cb = 0.5;	// expected value
+	float Cb = 50.0;	// expected value
 	
 	return Ca * exp(-((x - Cb) * (x - Cb)) / (2.0 * sqrt_variance * sqrt_variance));
 }
@@ -65,29 +65,29 @@ float spd_track(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float d, int lam
 {
 	float spd = 0.0;
 	// loop through some values
-	for (int n = 1; n <= 5; n += 1)
+	for (int n = 1; n <= 10; n += 1)
 	{
 		// condition:
 		//   a * ((2 * PI) / lambda) * (Ax + Bx * t) - 2 * PI * n == 0      AND
 		//   b * ((2 * PI) / lambda) * (Ay + By * t) - 2 * PI * m == 0
-		vec3 A = normalize(P - L) / d - k2_uv;
-		vec3 B = t_uv / d;
+		//vec3 A = (P - L) / d - k2_uv;
+		//vec3 B = t_uv / d;
 		
-		//vec3 Ax = cross(A, vec3(0.0, 0.0, P.z));
-		//vec3 Bx = cross(B, vec3(0.0, 0.0, P.z));
+		//float Ax = length(cross(A, vec3(0.0, 0.0, P.z)));
+		//float Bx = length(cross(B, vec3(0.0, 0.0, P.z)));
 		
-		vec3 qx = normalize(cross(q, vec3(0.0, 0.0, P_tex.z)));
+		float qx = dot(q, cross(normalize(P_tex - Center), vec3(0.0, 0.0, 1.0)));
 		
-		//float equation_14_1 = Aa * ((2.0 * PI) / lambda) * (Ax.x + Bx.x * t) - 2.0 * PI * n;
+		//float equation_14_1 = Aa * ((2.0 * PI) / lambda) * (Ax + Bx * t) - 2.0 * PI * n;
 		//if (equation_14_1 == 0)	// must be true for there to be a contribution by this.
 		//{
-			spd += gauss(Aa * qx.x - 2.0 * PI * n);	// Cn = 1.0
+			spd += gauss(Aa * qx - 2.0 * PI * n);	// Cn = 1.0
 		//}
 		
-		//float equation_14_2 = Aa * ((2.0 * PI) / lambda) * (Ax.x + Bx.x * t) - 2.0 * PI * -n;
+		//float equation_14_2 = Aa * ((2.0 * PI) / lambda) * (Ax + Bx * t) - 2.0 * PI * -n;
 		//if (equation_14_2 == 0)	// must be true for there to be a contribution by this.
 		//{
-			spd += gauss(Aa * qx.x - 2.0 * PI * -n); // Cn = 1.0
+			spd += gauss(Aa * qx - 2.0 * PI * -n); // Cn = 1.0
 		//}
 	}
 	
@@ -98,13 +98,13 @@ float spd_pit(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float d, int lambd
 {
 	float spd = 0.0;
 	// loop through some values
-	for (int m = 1; m <= 5; m += 1)
+	for (int m = 1; m <= 10; m += 1)
 	{
 		// condition:
 		//   a * ((2 * PI) / lambda) * (Ax + Bx * t) - 2 * PI * n == 0      AND
 		//   b * ((2 * PI) / lambda) * (Ay + By * t) - 2 * PI * m == 0
-		vec3 A = (P - L) / d - k2_uv;
-		vec3 B = t_uv / d;
+		//vec3 A = (P - L) / d - k2_uv;
+		//vec3 B = t_uv / d;
 		
 		//float Ay = dot(A, P_tex - Center);
 		//float By = dot(B, P_tex - Center);
@@ -152,8 +152,7 @@ vec3 spd_diffraction()
 			vec3 k1 = (2.0 * PI / lambda) * k1_uv;
 			
 			vec3 q = k1 - k2;
-			//finalcolor += convertColor(spd_pit(q, L, k2_uv, t, t_uv, lambda), lambda) + convertColor(spd_track(q, L, k2_uv, t, t_uv, lambda), lambda);
-			finalcolor += (spd_pit(q, L, k2_uv, t, t_uv, d, lambda) + spd_track(q, L, k2_uv, t, t_uv, d, lambda)) * lambda2rgb(lambda);
+			finalcolor += (spd_pit(q, L, k2_uv, t, t_uv, d, lambda) * spd_track(q, L, k2_uv, t, t_uv, d, lambda)) * lambda2rgb(lambda);
 			//finalcolor += (spd_track(q, L, k2_uv, t, t_uv, d, lambda)) * lambda2rgb(lambda);
 			//finalcolor += (spd_pit(q, L, k2_uv, t, t_uv, d, lambda)) * lambda2rgb(lambda);
 		}
