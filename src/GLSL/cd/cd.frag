@@ -32,11 +32,11 @@ const float PI = 3.14159;	// constant PI value
 // Took from example in the book
 vec3 lambda2rgb(int lambda)
 {
-    const float ultraviolet = 400.0;
-    const float infrared    = 700.0;
+    const int ultraviolet = 400;
+    const int infrared    = 700;
 
     // map visible wavelength range to 0.0 -> 1.0
-    float a = (lambda-ultraviolet) / (infrared-ultraviolet);
+    float a = float(lambda-ultraviolet) / float(infrared-ultraviolet);
 
     // bump function for a quick/simple rainbow map
     const float C = 7.0;        // controls width of bump
