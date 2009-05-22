@@ -1,0 +1,51 @@
+shader_obj 5.0 1 0
+plainPointLight 19 2 10 4 8 0 3 3 0 3 14 1
+8 98
+rgb
+current
+shader
+C:/Users/Brad/Documents/Classwork/Shading/project
+.:
+plainPointLight.sl
+light
+
+2
+1
+0
+0
+19
+intensity 4 5 -1 0 3 1 1 1 1 7 7
+lightcolor 3 5 0 1 3 1 2 2 2 7 7
+from 2 5 1 2 3 1 3 3 3 6 7
+$result_light 0 15 -1 0 3 0 0 0 0 0 0
+$S0 6 2 -1 0 3 0 0 0 0 0 0
+$S2 6 2 -1 1 3 0 0 0 0 0 0
+$S5 6 2 -1 2 3 0 0 0 0 3 3
+$srcDir 6 2 -1 3 3 0 0 0 0 0 0
+$includePath 6 2 -1 4 3 0 0 0 0 0 0
+Cl 3 10 0 0 2 0 0 7 7 0 0
+$S7 6 2 -1 5 3 0 0 0 0 1 8
+$C0 4 2 -1 0 3 0 0 0 0 1 2
+$C1 4 2 -1 1 3 0 0 6 7 3 7
+$S9 6 2 -1 6 3 0 0 4 4 0 0
+light 14 8 -1 0 2 1 3 0 0 3 8
+$Code0 9 8 -1 0 2 0 0 0 0 6 7
+$T0 11 4 -1 0 2 0 0 6 7 6 7
+$Cond0 10 11 -1 0 2 0 0 6 7 6 7
+$S10 6 2 -1 7 3 0 0 8 8 0 0
+19
+0 11 
+1 11 
+2 6 12 12 12 
+13 
+16 17 12 15 2 
+9 0 1 
+18 
+_assign 	2 0  5 3 0
+_assign 	2 2  5 3 0
+_pointtransform 5 4  5 4 0
+_enterproc 	1 9  5 3 0
+_lightingstart 	0 -1  5 6 0
+_illuminate 	5 10  5 6 0
+_scale		3 15  5 7 0
+_enterproc 	1 18  5 3 0
