@@ -81,13 +81,13 @@ float spd_track(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float d, int lam
 		//float equation_14_1 = Aa * ((2.0 * PI) / lambda) * (Ax + Bx * t) - 2.0 * PI * n;
 		//if (equation_14_1 == 0.0)	// must be true for there to be a contribution by this.
 		//{
-			spd += gauss(Aa * qx - 2.0 * PI * n);	// Cn = 1.0
+			spd += gauss(Aa * qx - 2.0 * PI * float(n));	// Cn = 1.0
 		//}
 		
 		//float equation_14_2 = Aa * ((2.0 * PI) / lambda) * (Ax + Bx * t) - 2.0 * PI * -n;
 		//if (equation_14_2 == 0.0)	// must be true for there to be a contribution by this.
 		//{
-			spd += gauss(Aa * qx - 2.0 * PI * -n); // Cn = 1.0
+			spd += gauss(Aa * qx - 2.0 * PI * float(-n)); // Cn = 1.0
 		//}
 	}
 	
@@ -114,13 +114,13 @@ float spd_pit(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float d, int lambd
 		//float equation_15_1 = Bb * ((2.0 * PI) / lambda) * (Ay + By * t) - 2.0 * PI * m;
 		//if (equation_15_1 == 0.0)	// must be true for there to be a contribution by this.
 		//{
-			spd += gauss(Bb * qy - 2.0 * PI * m); // Cm = 1.0
+			spd += gauss(Bb * qy - 2.0 * PI * float(m)); // Cm = 1.0
 		//}
 		
 		//float equation_15_2 = Bb * ((2.0 * PI) / lambda) * (Ay + By * t) - 2.0 * PI * -m;
 		//if (equation_15_2 == 0.0)	// must be true for there to be a contribution by this.
 		//{
-			spd += gauss(Bb * qy - 2.0 * PI * -m); // Cm = 1.0
+			spd += gauss(Bb * qy - 2.0 * PI * float(-m)); // Cm = 1.0
 		//}
 	}
 	
@@ -140,12 +140,12 @@ vec3 spd_diffraction()
 	for (int lambda = LambdaI; lambda <= LambdaF; lambda += LambdaStep)
 	{
 		vec3 k2_uv = normalize(-P / abs(-P));
-		vec3 k2 = (2.0 * PI / lambda) * k2_uv;
+		vec3 k2 = (2.0 * PI / float(lambda)) * k2_uv;
 		float d = distance(P, L);
 		for (float t = 0.0; t < Llength; t += (Llength / num_spikes))
 		{
 			vec3 k1_uv = normalize((P - L) / d - (t_uv / d) * t);	// must loop through t from 0 to Llength
-			vec3 k1 = (2.0 * PI / lambda) * k1_uv;
+			vec3 k1 = (2.0 * PI / float(lambda)) * k1_uv;
 			
 			vec3 q = k1 - k2;
 			finalcolor += (spd_pit(q, L, k2_uv, t, t_uv, d, lambda) * spd_track(q, L, k2_uv, t, t_uv, d, lambda)) * lambda2rgb(lambda) / num_spikes;
