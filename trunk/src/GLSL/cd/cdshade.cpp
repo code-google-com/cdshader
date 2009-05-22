@@ -239,7 +239,7 @@ void init( void ) {
 	GLfloat lmodel_ambient[] = { 0.4, 0.4, 0.4, 1.0 };
 	GLfloat local_view[]     = { 0.0 };
 
-	glClearColor( 0.1, 0.1, 0.1, 0.0 );
+	glClearColor( 0.0, 0.0, 0.0, 0.0 );
 	glEnable( GL_DEPTH_TEST );
 	glShadeModel( GL_SMOOTH );
 
