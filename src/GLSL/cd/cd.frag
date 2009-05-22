@@ -65,7 +65,7 @@ float spd_track(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float d, int lam
 {
 	float spd = 0.0;
 	// loop through some values
-	for (int n = 5; n <= 15; n += 1)
+	for (int n = 5; n <= 40; n += 1)
 	{
 		// condition:
 		//   a * ((2 * PI) / lambda) * (Ax + Bx * t) - 2 * PI * n == 0      AND
@@ -73,10 +73,10 @@ float spd_track(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float d, int lam
 		//vec3 A = (P - L) / d - k2_uv;
 		//vec3 B = t_uv / d;
 		
-		//float Ax = dot(A, cross(normalize(P_tex - Center), vec3(0.0, 0.0, 1.0)));
-		//float Bx = dot(B, cross(normalize(P_tex - Center), vec3(0.0, 0.0, 1.0)));
+		//float Ax = dot(A, cross(normalize(P_tex - Center), normalize(-normal)));
+		//float Bx = dot(B, cross(normalize(P_tex - Center), normalize(-normal)));
 		
-		float qx = dot(q, cross(normalize(P_tex - Center), vec3(0.0, 1.0, 0.0)));
+		float qx = dot(q, cross(normalize(P_tex - Center), normalize(-normal)));
 		
 		//float equation_14_1 = Aa * ((2.0 * PI) / lambda) * (Ax + Bx * t) - 2.0 * PI * n;
 		//if (equation_14_1 == 0.0)	// must be true for there to be a contribution by this.
@@ -98,7 +98,7 @@ float spd_pit(vec3 q, vec3 L, vec3 k2_uv, float t, vec3 t_uv, float d, int lambd
 {
 	float spd = 0.0;
 	// loop through some values
-	for (int m = 5; m <= 15; m += 1)
+	for (int m = 5; m <= 40; m += 1)
 	{
 		// condition:
 		//   a * ((2 * PI) / lambda) * (Ax + Bx * t) - 2 * PI * n == 0      AND
@@ -134,7 +134,7 @@ vec3 spd_diffraction()
 	// unit vectors
 	vec3 L = vec3(gl_ModelViewMatrix * gl_LightSource[0].position);	// Light position
 	vec3 t_uv = normalize(cross(lightDir, L));	// Direction (orientation) of line light
-	float num_spikes = 30.0;
+	float num_spikes = 25.0;
 	
 	//loop through all wavelengths and add up final color based on spd_pit*spd_track*rgb, return
 	for (int lambda = LambdaI; lambda <= LambdaF; lambda += LambdaStep)
@@ -162,7 +162,7 @@ vec3 spd_phong()
 	// Taken from plastic shader in lab1
 	vec4 final_color = vec4(0.1, 0.1, 0.1, 1.0);
 	        
-	vec3 N = normalize(normal);
+	vec3 N = normalize(-normal);
 	vec3 L = normalize(lightDir);
 	float lambertTerm = dot(N,L);
 

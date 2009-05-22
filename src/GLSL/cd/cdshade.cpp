@@ -360,22 +360,22 @@ void keyboard(unsigned char c, int x, int y) {
 		exit(0);
 	}
 	else if (c == 'a') {
-		angle = 5.0;
+		angle = 2.0;
 		axis[1] = 1.0;
 		axis[2] = axis[0] = 0.0;
 	}
 	else if (c == 'd') {
-		angle = -5.0;
+		angle = -2.0;
 		axis[1] = 1.0;
 		axis[2] = axis[0] = 0.0;
 	}
 	else if (c == 'w') {
-		angle = -5.0;
+		angle = -2.0;
 		axis[0] = 1.0;
 		axis[1] = axis[2] = 0.0;
 	}
 	else if (c == 's') {
-		angle = 5.0;
+		angle = 2.0;
 		axis[0] = 1.0;
 		axis[1] = axis[2] = 0.0;
 	}
