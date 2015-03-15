@@ -1,0 +1,1 @@
+Implement a CD shader in Renderman and GLSL
